@@ -58,41 +58,33 @@ impl LinkedList {
     }
 
     fn delete(&mut self, value: i32) -> Option<i32> {
+        let mut deleted_record = None;
+
         // Handle first case
         if let Some(node) = &self.head {
-            let old_head = self.head.take()?;
-            self.head = old_head.next;
-            return Some(old_head.data);
+            if node.data == value {
+                let old_head = self.head.take()?;
+                self.head = old_head.next;
+                self.size -= 1;
+                deleted_record = Some(old_head.data);
+            }
         }
 
-        let mut previous = self.head.as_mut();
-        let mut current = None;
+        let mut current = self.head.as_mut();
 
-        // Handle when single length list and item not found.
-        if let Some(node) = previous.as_mut() {
-            if node.next.is_none() {
-                return None;
+        while let Some(node) = current {
+            if let Some(next) = node.next.as_mut() {
+                if next.data == value {
+                    deleted_record = Some(next.data);
+                    node.next = next.next.take();
+                    self.size -= 1;
+                }
             }
 
             current = node.next.as_mut();
         }
 
-        println!("previous: {:?}", previous);
-        println!("current: {:?}", current);
-
-        //while let Some(node) = current {
-        //    if node.data == value {
-        //        let node_to_delete = node.as_mut();
-
-        //        if let Some(previous_node) = previous {
-        //            previous_node.next = node_to_delete.next;
-        //        }
-
-        //        return Some(node_to_delete.data);
-        //    }
-        //}
-
-        None
+        deleted_record
     }
 
     fn search(&self, value: i32) -> Option<i32> {
@@ -127,7 +119,9 @@ fn main() {
         linked_list.insert_at_end(i);
     }
 
-    linked_list.search(5);
+    linked_list.insert_at_end(5);
+
+    linked_list.delete(5);
 
     println!("{:?}", linked_list);
 }
@@ -242,4 +236,106 @@ fn test_search_multiple_node_list() {
     }
 
     assert_eq!(linked_list.search(5), Some(5));
+}
+
+#[test]
+fn test_delete_multiple_first_node_in_list() {
+    let mut linked_list = LinkedList::new();
+
+    for i in 1..=3 {
+        linked_list.insert_at_end(i);
+    }
+
+    linked_list.delete(1);
+
+    assert_eq!(
+        linked_list,
+        LinkedList {
+            size: 2,
+            head: Some(Box::new(Node {
+                data: 2,
+                next: Some(Box::new(Node {
+                    data: 3,
+                    next: None
+                })),
+            })),
+        }
+    );
+}
+
+#[test]
+fn test_delete_multiple_middle_node_in_list() {
+    let mut linked_list = LinkedList::new();
+
+    for i in 1..=3 {
+        linked_list.insert_at_end(i);
+    }
+
+    linked_list.delete(2);
+
+    assert_eq!(
+        linked_list,
+        LinkedList {
+            size: 2,
+            head: Some(Box::new(Node {
+                data: 1,
+                next: Some(Box::new(Node {
+                    data: 3,
+                    next: None
+                })),
+            })),
+        }
+    );
+}
+
+#[test]
+fn test_delete_multiple_last_node_in_list() {
+    let mut linked_list = LinkedList::new();
+
+    for i in 1..=3 {
+        linked_list.insert_at_end(i);
+    }
+
+    linked_list.delete(3);
+
+    assert_eq!(
+        linked_list,
+        LinkedList {
+            size: 2,
+            head: Some(Box::new(Node {
+                data: 1,
+                next: Some(Box::new(Node {
+                    data: 2,
+                    next: None
+                })),
+            })),
+        }
+    );
+}
+
+#[test]
+fn test_delete_multiple_multiple_nodes_in_list() {
+    let mut linked_list = LinkedList::new();
+
+    for i in 1..=3 {
+        linked_list.insert_at_end(i);
+    }
+
+    linked_list.insert_at_end(1);
+
+    linked_list.delete(1);
+
+    assert_eq!(
+        linked_list,
+        LinkedList {
+            size: 2,
+            head: Some(Box::new(Node {
+                data: 2,
+                next: Some(Box::new(Node {
+                    data: 3,
+                    next: None
+                })),
+            })),
+        }
+    );
 }
